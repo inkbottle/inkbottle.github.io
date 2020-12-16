@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.7.0',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="线程安全主要的着眼点是对象状态的安全发布，其次是人为控制访问时序。">
+<meta name="keywords" content="Java 并发">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java并发编程实战">
+<meta property="og:url" content="https://inkbottle.github.io/2020/12/16/reading/2019-01-20-Java-Concurrency-In-Practice/index.html">
+<meta property="og:site_name" content="SHAWN THINK">
+<meta property="og:description" content="线程安全主要的着眼点是对象状态的安全发布，其次是人为控制访问时序。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-12-16T12:24:08.745Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java并发编程实战">
+<meta name="twitter:description" content="线程安全主要的着眼点是对象状态的安全发布，其次是人为控制访问时序。">
+
+
+
+
+
+
+  <link rel="canonical" href="https://inkbottle.github.io/2020/12/16/reading/2019-01-20-Java-Concurrency-In-Practice/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java并发编程实战 | SHAWN THINK</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">SHAWN THINK</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">It's supposed to be hard. If it wasn't hard, everyone would do it. </h1>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-resume">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/resume/" rel="section"><i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br>简历</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://inkbottle.github.io/2020/12/16/reading/2019-01-20-Java-Concurrency-In-Practice/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Shawn Fang">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SHAWN THINK">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Java并发编程实战
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-12-16 20:24:08" itemprop="dateCreated datePublished" datetime="2020-12-16T20:24:08+08:00">2020-12-16</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/读书/" itemprop="url" rel="index"><span itemprop="name">读书</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+            <div class="post-description">线程安全主要的着眼点是对象状态的安全发布，其次是人为控制访问时序。</div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="第一章-简介"><a href="#第一章-简介" class="headerlink" title="第一章 简介"></a>第一章 简介</h2><h2 id="第二章-线程安全性"><a href="#第二章-线程安全性" class="headerlink" title="第二章 线程安全性"></a>第二章 线程安全性</h2><p><strong>无状态类总是线程安全的</strong>。</p>
+<p>当改变状态的行为是可再拆分时候，（比如：改变一个变量：读取、改变、写入，包含了三个操作），在多线程环境下，该状态就有可能失去同步。</p>
+<p>当一个类中存在多个状态变量时，特别是一个变量的改变依赖于另一个变量的状态时，尤其需要小心，同上面提及的情形类似，这里的关联变量在改变他们时请保持同步。</p>
+<p>Java提供synchronized 关键字对<code>代码块</code>进行同步处理，但是值得注意的是，在非显示指定的情况下，该操作使用的锁是该<strong>对象本身</strong>（this）。</p>
+<p>互斥行为只发生在同一个锁上，如果是不同的锁，则不会发生互斥，只是<em>约定上通常使用对象锁来保证行为同步</em>，<strong>如果各个行为使用不同的锁则不能保证同步</strong>。</p>
+<p>持有锁的时间过长会带来活跃性或性能问题。例如：如果执行巨大耗费的操作或者I/O，则过程中一定不要使用锁，会严重影响性能。</p>
+<p>同步的场景不仅包含互斥行为，而且包含可见变量。</p>
+<h2 id="第三章-对象的共享"><a href="#第三章-对象的共享" class="headerlink" title="第三章 对象的共享"></a>第三章 对象的共享</h2><p>加锁的意义不仅仅在于原子操作的互斥作用，而且可以使得对象的有效值对多个并发访问保持可见性。</p>
+<p>早期的java虚拟机允许将64位操作分解为两个32位操作，所以请注意64位数据对象的互斥和可见性问题。</p>
+<p>volatile 仅能保证数据的可见性，并不能保证操作的原子性。该关键字建议编译器放弃效率更高的直接从寄存器获取值，而直接从内存获取，以保证数据的最新。</p>
+<p>发布(publish)表示数据对象已经完全准备好在构造区域之外的地方使用，该对象已经完成构造。</p>
+<p>逸出(escape)表示数据对象在并未完全构造好的情况下被外部访问。这种情况通常会或多或少带来一些问题，请谨慎发布数据对象，避免逸出。</p>
+<h3 id="建议"><a href="#建议" class="headerlink" title="建议"></a>建议</h3><p>不要在构造函数中使this 逸出，因为对象尚未构造完全。可以在构造函数中定义线程对象，但最好不要启动它，应当在随后的过程中定义start/init延迟启动该线程。</p>
+<p>线程封闭：不共享数据，仅在单线程中访问数据，这时就不需要同步，这种方法称之为线程封闭。</p>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><ul>
+<li>ad-hoc线程封闭：维护线程封闭性的职责完全由程序实现来承担。（单线程的简便性胜过了该方式的脆弱性，所以仍值得推荐）</li>
+<li>栈封闭：也被称为线程内部使用或者线程局部使用。</li>
+<li>ThreadLocal</li>
+</ul>
+<h3 id="不可变对象-满足如下三个条件"><a href="#不可变对象-满足如下三个条件" class="headerlink" title="不可变对象(满足如下三个条件)"></a>不可变对象(满足如下三个条件)</h3><ol>
+<li>对象创建以后状态不能修改</li>
+<li>所有域都是final类型的</li>
+<li>对象正确创建，构建期间没有this 逸出。</li>
+</ol>
+<h3 id="发布"><a href="#发布" class="headerlink" title="发布"></a>发布</h3><p>不可变对象可以任意机制发布。</p>
+<p>事实不可变对象需要通过安全方式发布。</p>
+<p>可变对象不仅需要通过安全方式发布，而且必须是线程安全的，或者由某个锁保护起来。</p>
+<h3 id="方式"><a href="#方式" class="headerlink" title="方式"></a>方式</h3><p>线程封闭： 对象只在某个线程内部访问。</p>
+<p>只读共享： 对象从构造完成便不能再更改。</p>
+<p>线程安全共享：线程安全的对象在内部实现同步，线程可以通过该对象的公有接口来访问。</p>
+<p>保护对象： 必须持有特定的锁才能访问某对象。</p>
+<h2 id="第四章-对象的组合"><a href="#第四章-对象的组合" class="headerlink" title="第四章 对象的组合"></a>第四章 对象的组合</h2><p>注意依赖状态的操作，保持同步。</p>
+<p>注意状态变量的有效性约束条件，这可能需要你添加额外的同步操作。</p>
+<p>注意状态的所有权，分散所有权将会使状态同步和可见性变得复杂。</p>
+<p>将非线程安全的类转化为线程安全的类，实例封闭：将非线程安全的类封装在另一个类内部，并采取同步措施。</p>
+<p>线程封闭的一种方式：java监视器模式，将所有修改或获取类内部状态的方式封装，不对外发表状态本身，而发布访问接口，对访问接口同步。</p>
+<p>可以使用委托：如果一个类由多个独立且线程安全的内部状态变量组成，并且所有的操作都不包含无效状态转换，则可以将类的线程安全委托给内部的状态变量。</p>
+<p>为现有的线程安全类添加原子操作：需了解所使用的线程安全类其所使用的锁，特别是作为原有的线程安全类的客户端时，使用使用同样的锁才能保证原子性和同步。</p>
+<p>组合是一个良好的方式： 添加原子操作，也可以将一些操作安全的委托给内部的组合线程安全对象。</p>
+<p>将你的线程安全策略文档化，并且当某些库的文档没有明确指明某些类是否是线程安全时，不要做这样的假设。</p>
+<h2 id="第五章-基础构建模块"><a href="#第五章-基础构建模块" class="headerlink" title="第五章 基础构建模块"></a>第五章 基础构建模块</h2><h3 id="同步容器类"><a href="#同步容器类" class="headerlink" title="同步容器类"></a>同步容器类</h3><p>对非线程安全容器实例使用 toString 将会隐式调用迭代器。相同的还有hashCode、 equals、 containsAll、 removeAll、 retainAll等方法，以及把容器作为操作的构造函数，这些都会对容器进行迭代，所有这些操作都可能抛出ConcurrentModificationException。</p>
+<p>通过并发容器来代替同步容器可以极大地提高伸缩性并降低风险：</p>
+<ul>
+<li>ConcurrentHashMap</li>
+<li>CopyOnWriteArrayList</li>
+</ul>
+<h3 id="阻塞队列与生产者-消费者模式"><a href="#阻塞队列与生产者-消费者模式" class="headerlink" title="阻塞队列与生产者/消费者模式"></a>阻塞队列与生产者/消费者模式</h3><p>这称之为<code>串行线程封闭</code>， 另外还有双端队列(Deque，具体实现有：ArrayDeque和LinkedBlockingDeque)和工作密取(work stealing，当自己需要处理的队列内容为空时，可以从临近的其他对象的任务双端队列中获取任务),这些方式都能降低线程竞争，并且提高效率。</p>
+<h3 id="同步工具类"><a href="#同步工具类" class="headerlink" title="同步工具类"></a>同步工具类</h3><p>CountDownLatch闭锁：举例， 老师等待三个学生到来（await），学生到达时调用countDown， 等到老师等待的所有学生到达后，老师开始活动。这个过程中，老师等待多少同学是在构造闭锁（CountDownLatch）的时候确定的，并且在这个过程中，没有任何办法能改变这个值。</p>
+<p>FutureTask: 继承自runable 接口，这也意味着可以定义有返回值的行为作为，再用这个FutrueTask构建线程，当你需要某个过程的结果时，可以预先运行这个过程，并在之后需要的时候调用FutureTask的get方法得到这个过程的返回值，如果运行已经完成，则立即返回结果，如果没有，get方法将会阻塞，直到结果返回。</p>
+<p>Semaphore信号量: 举例，老板说我这里有三间更衣室，你们有五个人，但是你们同时只能进来三个（acquire，过程后release），其他的，排队。</p>
+<p>CyclicBarrier栅栏：举例，我有五个兄弟，我过河了，但是我得等他们一起到之后我才能继续行动（线程使用await）。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">## 概述</span><br><span class="line"></span><br><span class="line">### 安全性问题</span><br><span class="line"></span><br><span class="line">永远不发生糟糕的事情</span><br><span class="line"></span><br><span class="line">### 活跃性问题</span><br><span class="line"></span><br><span class="line">某件正确的事情最终会发生</span><br><span class="line"></span><br><span class="line">#### 单线程</span><br><span class="line"></span><br><span class="line">死循环</span><br><span class="line"></span><br><span class="line">#### 多线程</span><br><span class="line"></span><br><span class="line">1. 死锁</span><br><span class="line">2. 饥饿</span><br><span class="line">3. 活锁</span><br><span class="line"></span><br><span class="line">### 性能问题</span><br><span class="line"></span><br><span class="line">#### 单线程</span><br><span class="line"></span><br><span class="line">1. 服务时间过长</span><br><span class="line">2. 吞吐率过低</span><br><span class="line">3. 资源消耗过高</span><br><span class="line">4. 可伸缩性较差</span><br><span class="line"></span><br><span class="line">#### 多线程</span><br><span class="line"></span><br><span class="line">1. 上下文切换开销：cpu花费过多的时间在调度而不是线程的运行上</span><br><span class="line">2. 同步机制会抑制编译器的优化，使得内存缓存区的数据无效，增加共享总线的同步流量</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>if you think my article helps, donation is appreciated. <br> 如果觉得此文有帮助,欢迎打赏.</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechat_recv.png" alt="Shawn Fang 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay_recv.jpg" alt="Shawn Fang 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java-并发/" rel="tag"># Java 并发</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/12/16/reading/2015-12-29-Sample-Reading-Notes/" rel="next" title="现实的上帝">
+                <i class="fa fa-chevron-left"></i> 现实的上帝
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/12/16/tech/2016-01-14-Build-Your-Own-Baidu-Apps-With-Python/" rel="prev" title="使用Django创建你的Python BAE 程序">
+                使用Django创建你的Python BAE 程序 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpeg" alt="Shawn Fang">
+            
+              <p class="site-author-name" itemprop="name">Shawn Fang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://spicychicken.github.io/" title="https://spicychicken.github.io/" rel="noopener" target="_blank">秀才菌</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://chilichicken.github.io/" title="https://chilichicken.github.io/" rel="noopener" target="_blank">污妖王</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#第一章-简介"><span class="nav-number">1.</span> <span class="nav-text">第一章 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第二章-线程安全性"><span class="nav-number">2.</span> <span class="nav-text">第二章 线程安全性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第三章-对象的共享"><span class="nav-number">3.</span> <span class="nav-text">第三章 对象的共享</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#建议"><span class="nav-number">3.1.</span> <span class="nav-text">建议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法"><span class="nav-number">3.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不可变对象-满足如下三个条件"><span class="nav-number">3.3.</span> <span class="nav-text">不可变对象(满足如下三个条件)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发布"><span class="nav-number">3.4.</span> <span class="nav-text">发布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方式"><span class="nav-number">3.5.</span> <span class="nav-text">方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第四章-对象的组合"><span class="nav-number">4.</span> <span class="nav-text">第四章 对象的组合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第五章-基础构建模块"><span class="nav-number">5.</span> <span class="nav-text">第五章 基础构建模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#同步容器类"><span class="nav-number">5.1.</span> <span class="nav-text">同步容器类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#阻塞队列与生产者-消费者模式"><span class="nav-number">5.2.</span> <span class="nav-text">阻塞队列与生产者/消费者模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#同步工具类"><span class="nav-number">5.3.</span> <span class="nav-text">同步工具类</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他"><span class="nav-number">6.</span> <span class="nav-text">其他</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Shawn Fang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a></div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+
+
+
+  
+
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <script src="/lib/bookmark/bookmark.min.js?v=1.0"></script>
+  <script>
+  
+    bookmark.scrollToMark('auto', "#更多");
+  
+  </script>
+
+
+  
+
+  
+
+</body>
+</html>
