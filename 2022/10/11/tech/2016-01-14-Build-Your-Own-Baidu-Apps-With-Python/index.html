@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"inkbottle.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="百度的BAE服务很便宜，基础服务一个月最近才6块钱，是时候在百度上创建你自己的app了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Django创建你的Python BAE 程序">
+<meta property="og:url" content="https://inkbottle.github.io/2022/10/11/tech/2016-01-14-Build-Your-Own-Baidu-Apps-With-Python/index.html">
+<meta property="og:site_name" content="SHAWN THINK">
+<meta property="og:description" content="百度的BAE服务很便宜，基础服务一个月最近才6块钱，是时候在百度上创建你自己的app了。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-11T03:36:18.316Z">
+<meta property="article:modified_time" content="2020-12-16T12:24:08.746Z">
+<meta property="article:author" content="Shawn Fang">
+<meta property="article:tag" content="BAE">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://inkbottle.github.io/2022/10/11/tech/2016-01-14-Build-Your-Own-Baidu-Apps-With-Python/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://inkbottle.github.io/2022/10/11/tech/2016-01-14-Build-Your-Own-Baidu-Apps-With-Python/","path":"2022/10/11/tech/2016-01-14-Build-Your-Own-Baidu-Apps-With-Python/","title":"使用Django创建你的Python BAE 程序"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>使用Django创建你的Python BAE 程序 | SHAWN THINK</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SHAWN THINK</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">It's supposed to be hard. If it wasn't hard, everyone would do it. </p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2%E7%9A%84%E6%89%AF%E6%B7%A1%E4%B9%8B%E8%AF%AD"><span class="nav-number">1.</span> <span class="nav-text">写在前面的扯淡之语</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8EDjango%E9%9B%86%E6%88%90"><span class="nav-number">2.</span> <span class="nav-text">与Django集成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">2.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E6%9C%AC%E5%9C%B0%E5%B7%A5%E7%A8%8B"><span class="nav-number">2.2.</span> <span class="nav-text">初始化本地工程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5bae%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95"><span class="nav-number">2.3.</span> <span class="nav-text">导入bae工作目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Bridge-Django-to-BAE"><span class="nav-number">2.4.</span> <span class="nav-text">Bridge Django to BAE</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E9%9C%80%E8%A6%81%E7%9A%84lib"><span class="nav-number">3.</span> <span class="nav-text">配置需要的lib</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E5%90%8E%E9%9D%A2"><span class="nav-number">4.</span> <span class="nav-text">写在后面</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Shawn Fang</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://inkbottle.github.io/2022/10/11/tech/2016-01-14-Build-Your-Own-Baidu-Apps-With-Python/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Shawn Fang">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SHAWN THINK">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="使用Django创建你的Python BAE 程序 | SHAWN THINK">
+      <meta itemprop="description" content="百度的BAE服务很便宜，基础服务一个月最近才6块钱，是时候在百度上创建你自己的app了。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用Django创建你的Python BAE 程序
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-10-11 11:36:18" itemprop="dateCreated datePublished" datetime="2022-10-11T11:36:18+08:00">2022-10-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2020-12-16 20:24:08" itemprop="dateModified" datetime="2020-12-16T20:24:08+08:00">2020-12-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">百度的BAE服务很便宜，基础服务一个月最近才6块钱，是时候在百度上创建你自己的app了。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="写在前面的扯淡之语"><a href="#写在前面的扯淡之语" class="headerlink" title="写在前面的扯淡之语"></a>写在前面的扯淡之语</h2><p>BAE全称Baidu App Enigine： 百度程序引擎。跟Google App Engine差不多。笔者也曾试用过其他几款，分别是：<br>谷歌家的，新浪家的，阿里家的。当然，如果你买得起虚拟主机，这篇就不用看了，燃烧你的毛爷爷总是能取暖的。</p>
+<p>谷歌大多数时候都在抽风，虽然高大上，但是无奈，实在无缘。</p>
+<p>新浪家的感觉并不好用，功能也有限。</p>
+<p>阿里家的呢，嗯，<strong>比较贵！！！</strong></p>
+<p>网上一大把的是在百度搞活动的时候领了券的，笔者后知后觉，没赶上好时候。贡献了李厂长12块钱（乞丐版，先体验2个月。） 支持主流语言:Nodejs, php, java, python.因为选择的硬件配置比较低，对js和php也不是很熟，所以创建app的时候选了python。支持django，pip上有的库都能用(<code>requirements.txt</code> 定义)。也还比较方便。唯一不便的是，port服务并不是免费的，而且数据库只能使用<code>公有数据库</code>，<code>不支持长连接</code>，30s会断开一次。</p>
+<p>闲话扯了这么多，也该说正题了。</p>
+<h2 id="与Django集成"><a href="#与Django集成" class="headerlink" title="与Django集成"></a>与Django集成</h2><p>默认创建app之后差不多有这3个文件：</p>
+<pre><code>app.conf favicon.ico index.py
+</code></pre>
+<p><code>app.conf</code> app的配置,参考这里: <a target="_blank" rel="noopener" href="https://bce.baidu.com/doc/BAE/GUIGettingStarted.html#.E9.85.8D.E7.BD.AEapp.conf">点我</a> 这个文件一会儿是要修改的，暂时搁这里。</p>
+<p><code>favicon.ico</code> 这个是图标啦，自己换吧。</p>
+<p><code>index.py</code> 这个文件后面需要修改，以bridge BAE和Django。</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>pip安装你的django lib, 如果有代理：</p>
+<pre><code>pip install --proxy serve_ip:port package_name
+</code></pre>
+<h3 id="初始化本地工程"><a href="#初始化本地工程" class="headerlink" title="初始化本地工程"></a>初始化本地工程</h3><p>然后在你的工程目录下初始化你的Django init 版本:</p>
+<pre><code>django-admin startproject xtest
+</code></pre>
+<p>然后得到类似这样的目录结构：</p>
+<pre><code>$ tree
+.
+├── manage.py
+└── xtest
+    ├── __init__.py
+    ├── settings.py
+    ├── urls.py
+    └── wsgi.py
+
+1 directory, 5 files
+</code></pre>
+<h3 id="导入bae工作目录"><a href="#导入bae工作目录" class="headerlink" title="导入bae工作目录"></a>导入bae工作目录</h3><p>将这几个文件移到上一层目录：</p>
+<pre><code>    ├── __init__.py
+    ├── settings.py
+    ├── urls.py
+    └── wsgi.py
+</code></pre>
+<p>删除xtest目录中的xtest目录，然后将顶层xtest目录移动到checkout的代码文件夹</p>
+<p>这时，你checkout的代码看起来是这样的：</p>
+<pre><code>$ tree
+.
+├── app.conf
+├── xtest
+│   ├── __init__.py
+│   ├── __init__.pyc
+│   ├── settings.py
+│   ├── settings.pyc
+│   ├── urls.py
+│   ├── urls.pyc
+│   ├── wsgi.py
+│   └── wsgi.pyc
+├── favicon.ico
+├── index.py
+└── manage.py
+
+1 directory, 12 files
+</code></pre>
+<h3 id="Bridge-Django-to-BAE"><a href="#Bridge-Django-to-BAE" class="headerlink" title="Bridge Django to BAE"></a>Bridge Django to BAE</h3><p>然后修改app.conf:</p>
+<pre><code>handlers:
+    - url : /.*
+         script: index.py
+</code></pre>
+<p><strong>这里是将所有的url都重定向给index.py wrap的框架来处理。</strong></p>
+<p><code>index.py</code> 参见：<a target="_blank" rel="noopener" href="http://developer.baidu.com/wiki/index.php?title=docs/cplat/rt/python">BAE2.0文档</a></p>
+<p>看起来像这样：</p>
+<pre><code>#-*- coding:utf-8 -*-
+import os
+import sys
+
+os.environ[&#39;DJANGO_SETTINGS_MODULE&#39;] = &#39;xtest.settings&#39;
+
+path = os.path.dirname(os.path.abspath(__file__)) + &#39;/xtest&#39;
+if path not in sys.path:
+    sys.path.insert(1, path)
+
+from django.core.wsgi import get_wsgi_application
+from bae.core.wsgi import WSGIApplication
+
+application = WSGIApplication(get_wsgi_application())
+</code></pre>
+<p><strong>注意</strong>:本人使用的是1.9.1版本的Django，所以如果是使用的1.7+的版本这样是没问题的。如果1.7一下，请参照：</p>
+<pre><code>import os
+import sys
+ 
+os.environ[&#39;DJANGO_SETTINGS_MODULE&#39;] = &#39;djangodemo.settings&#39;
+ 
+path = os.path.dirname(os.path.abspath(__file__)) + &#39;/djangodemo&#39;
+if path not in sys.path:
+    sys.path.insert(1, path)
+ 
+from django.core.handlers.wsgi import WSGIHandler
+from bae.core.wsgi import WSGIApplication
+ 
+application = WSGIApplication(WSGIHandler())
+</code></pre>
+<p>需要说明的是，BAE3.0已经<em>不在</em>使用bae.core.const模块，所以关于数据库的配置请参考：<a target="_blank" rel="noopener" href="http://developer.baidu.com/wiki/index.php?title=docs/cplat/bae/python">BAE3.0文档</a></p>
+<h2 id="配置需要的lib"><a href="#配置需要的lib" class="headerlink" title="配置需要的lib"></a>配置需要的lib</h2><p>在目录下添加requirements.txt文件，文件中加入依赖：</p>
+<pre><code>django==1.9.1
+djangorestframework==3.3.2
+</code></pre>
+<p>版本号自己修改。上传代码，访问你的app页面，如果提示url不能匹配成功，则表示Django已经在工作了。导入eclipse，继续剩下的coding。</p>
+<h2 id="写在后面"><a href="#写在后面" class="headerlink" title="写在后面"></a>写在后面</h2><p>总是有人在吐槽功能不好，性能不行，一天两毛钱，说老实话，我是没啥图的了，很满意。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/BAE/" rel="tag"># BAE</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/10/11/tech/2015-12-27-Build-Blog-On-Github-Using-Jekyll/" rel="prev" title="在Github上搭建Jekyll博客">
+                  <i class="fa fa-chevron-left"></i> 在Github上搭建Jekyll博客
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/10/11/tech/2016-03-25-Gerrit-Jenkins-Integration/" rel="next" title="gerrit integrate with jenkins">
+                  gerrit integrate with jenkins <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Shawn Fang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
